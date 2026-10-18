@@ -96,8 +96,9 @@ def prepare(c, out, source):
     median = np.nanmedian(train[:boundary], axis=0)
     scale = 1.4826 * np.nanmedian(abs(train[:boundary] - median), axis=0)
     keep = np.isfinite(scale) & (scale > 1e-8)
-    normalized = (causal_fill(train, median) - median) / np.maximum(scale, 1e-8)
-    test = (causal_fill(raw['test'].astype(float), train[-1]) - median) / np.maximum(scale, 1e-8)
+    filled_train = causal_fill(train, median)
+    normalized = (filled_train - median) / np.maximum(scale, 1e-8)
+    test = (causal_fill(raw['test'].astype(float), filled_train[-1]) - median) / np.maximum(scale, 1e-8)
     np.savez_compressed(out / 'data.npz', fit=normalized[:boundary, keep], val=normalized[boundary:, keep], test=test[:, keep])
     np.savez(out / 'preprocessing.npz', median=median, scale=scale, retained_channels=np.flatnonzero(keep))
 
